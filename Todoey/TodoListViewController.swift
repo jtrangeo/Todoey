@@ -12,8 +12,14 @@ class TodoListViewController: UITableViewController {
     
     var itemArray = ["Find Mike", "Buy Egg", "Destroy Dem"]
     
+    let defaults = UserDefaults.standard
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        if let items = defaults.array(forKey: "TodoListArray") as? [String] {
+            itemArray = items
+        }
         
     }
 
@@ -58,17 +64,21 @@ class TodoListViewController: UITableViewController {
             //what will happen once the suer clicks the Add Item on our UI alert
             self.itemArray.append(textField.text!)
             //! text prop is never of textfield is never going to = nil. even if its empty it will set to empty string
+            
+            self.defaults.set(self.itemArray,forKey: "TodoListArray")
             self.tableView.reloadData() //reloads n allows for new item to be added
         }
         
         alert.addTextField { (alertTextField) in
             alertTextField.placeholder = "Create new item"
             textField = alertTextField
+    
             
         }
         
         alert.addAction(action)
-        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+        alert.addAction(cancelAction) //adds cancel button
         present(alert, animated: true, completion: nil)
     }
     
