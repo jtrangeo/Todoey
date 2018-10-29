@@ -10,14 +10,25 @@ import UIKit
 
 class TodoListViewController: UITableViewController {
     
-    var itemArray = ["Find Mike", "Buy Egg", "Destroy Dem"]
-    
+    var itemArray = [Item]() //an array of string
     let defaults = UserDefaults.standard
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        if let items = defaults.array(forKey: "TodoListArray") as? [String] {
+        let newItem = Item() //an array of item obj
+        newItem.title = "Find Mike"
+        itemArray.append(newItem)
+        
+        let newItem2 = Item() //an object of iten class
+        newItem2.title = "Buy Eggs"
+        itemArray.append(newItem2)
+        
+        let newItem3 = Item() //an object of iten class
+        newItem3.title = "Destroy Dem"
+        itemArray.append(newItem3)
+        
+        if let items = defaults.array(forKey: "TodoListArray") as? [Item] {
             itemArray = items
         }
         
@@ -32,8 +43,14 @@ class TodoListViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
-    
-        cell.textLabel?.text = itemArray[indexPath.row]
+        
+        let item = itemArray[indexPath.row]
+        
+        cell.textLabel?.text = itemArray[indexPath.row].title
+        
+
+        //ternary operator
+        cell.accessoryType = item.done ? .checkmark : .none
         
         return cell
     }
@@ -44,12 +61,10 @@ class TodoListViewController: UITableViewController {
     
         //below checks to see if there has been a checkmark when cilcked. if does then chk mk dissapoers when click
         
-        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .none
-        } else {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
-            //add a check mark if it doesnt have one when clicked 
-        }
+        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
+        
+        tableView.reloadData()
+        
         tableView.deselectRow(at: indexPath, animated: true) //flashes selected row
     
     }
@@ -62,7 +77,10 @@ class TodoListViewController: UITableViewController {
         let alert = UIAlertController(title: "Add New Todoey Item", message: "", preferredStyle: .alert)
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             //what will happen once the suer clicks the Add Item on our UI alert
-            self.itemArray.append(textField.text!)
+            
+            let newItem = Item()
+            newItem.title = textField.text!
+            self.itemArray.append(newItem)
             //! text prop is never of textfield is never going to = nil. even if its empty it will set to empty string
             
             self.defaults.set(self.itemArray,forKey: "TodoListArray")
