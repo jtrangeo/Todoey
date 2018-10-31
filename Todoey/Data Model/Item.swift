@@ -8,7 +8,7 @@
 
 import Foundation
 
-class Item {
+class Item: Codable { //in order to be encodable, the properties below needs to not be custom
     
     
     var title: String = ""
