@@ -7,14 +7,15 @@
 //
 
 import UIKit
-import CoreData
+import RealmSwift
 
 class CategoryViewController: UITableViewController {
 
-    var categoryArray = [Category]()
+    let realm = try! Realm() //new access pt to realm database
+    var categories: Results<Category>? //new collection  of results that are category objects: ? is used to be safe
    // let defaults = UserDefaults.standard
     
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext //grabs ref to context that we will be using to CRUD data, will also commmunicate with persistance container
+//    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext //grabs ref to context that we will be using to CRUD data, will also commmunicate with persistance container
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -24,74 +25,75 @@ class CategoryViewController: UITableViewController {
     //MARK - TableView Datasource Methods
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return categoryArray.count
+        return categories?.count ?? 1 //this could be nil bc category is an optional and we are only saying get the count of category is not nil. if it is nil, use 1 instead.
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
         
-      //  let category = categoryArray[indexPath.row]
+      //  let category = category[indexPath.row]
         
-        cell.textLabel?.text = categoryArray[indexPath.row].name //the name property is here bc we added it as an attribute in the Category ENtity
+        cell.textLabel?.text = categories?[indexPath.row].name ?? "No Categories added yet" //the name property is here bc we added it as an attribute in the Category ENtity
         
         return cell
     }
     
     //MARK - Data Manipulation Methods -save data load data
-    func saveCategories() {
-        
-        
-        do { try context.save()
-            
+    func save(category: Category) {
+        do {
+            try realm.write{
+                realm.add(category)
+            }
         } catch {
             print("Error saving category \(error)")
         }
         
-        self.tableView.reloadData() //reloads n allows for new item to be added}
+        tableView.reloadData() //reloads n allows for new item to be added}
     }
     
-    func loadCategories(with request: NSFetchRequest<Category> = Category.fetchRequest()) { //with ext param and request internal param, internal will be used in the function loadItem and with external param will be use down down there
-        // let request : NSFetchRequest<Item> = Item.fetchRequest()
-        do {
-            categoryArray = try context.fetch(request)
-        } catch {
-            print("Error fetching data from context \(error)")
-        }
-        tableView.reloadData()
+    func loadCategories() {
+        categories = realm.objects(Category.self)
+  
+//    with request: NSFetchRequest<Category> = Category.fetchRequest()) { //with ext param and request internal param, internal will be used in the function loadItem and with external param will be use down down there
+//        // let request : NSFetchRequest<Item> = Item.fetchRequest()
+//        do {
+//            category = try context.fetch(request)
+//        } catch {
+//            print("Error fetching data from context \(error)")
+//        }
+        tableView.reloadData() //auto update categ method in TableView Datasource
     }
     //MARK - Add New Categories
     
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
+        
         var textField = UITextField()
         
         let alert = UIAlertController(title: "Add New Category", message: "", preferredStyle: .alert)
         let action = UIAlertAction(title: "Add", style: .default) { (action) in
             //what will happen once the suer clicks the Add Item on our UI alert
-            
-            
            
-            let newCategory = Category(context: self.context)
+            let newCategory = Category()
             newCategory.name = textField.text!
 //            newCategory.done = false
-            self.categoryArray.append(newCategory)
+          
             //! text prop is never of textfield is never going to = nil. even if its empty it will set to empty string
             
-            self.saveCategories()
+            self.save(category: newCategory)
         
         }
+        alert.addAction(action)
         
         alert.addTextField { (field) in
             textField = field
             textField.placeholder = "Create new category"
         }
         
-        alert.addAction(action)
+        
 //        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
 //        alert.addAction(cancelAction) //adds cancel button
         present(alert, animated: true, completion: nil)
-
-        
     }
     
     //MARK - TableView Datasource Methods
@@ -107,7 +109,7 @@ class CategoryViewController: UITableViewController {
         let destinationVC = segue.destination as! TodoListViewController
         
         if let indexPath  = tableView.indexPathForSelectedRow {
-            destinationVC.selectedCategory = categoryArray[indexPath.row]
+            destinationVC.selectedCategory = categories?[indexPath.row]
         
     }
         //print(itemArray[indexPath.row])
@@ -120,11 +122,11 @@ class CategoryViewController: UITableViewController {
         
         //        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
-        saveCategories()
+//        save(category: newCategory)
         
         
        // tableView.deselectRow(at: indexPath, animated: true) //flashes selected row
         
     
-}
+    }
 }
