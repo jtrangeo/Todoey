@@ -64,7 +64,7 @@ class CategoryViewController: UITableViewController {
 //        }
         tableView.reloadData() //auto update categ method in TableView Datasource
     }
-    //MARK - Add New Categories
+    //MARK - Add New Categories.
     
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         
